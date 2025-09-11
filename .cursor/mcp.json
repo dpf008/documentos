@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dpf": {
+      "type": "http",
+      "url": "https://localhost-b6441226.deco.host/mcp"
+    }
+  }
+}
