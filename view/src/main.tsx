@@ -6,20 +6,33 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
+import DashboardPage from "./routes/dashboard.tsx";
+import MovimentacoesPage from "./routes/movimentacoes.tsx";
+import RelatoriosPage from "./routes/relatorios.tsx";
 import HomePage from "./routes/home.tsx";
-import DeMolayPage from "./routes/demolay.tsx";
+import { Navigation } from "./components/Navigation.tsx";
+import LoggedProvider from "./components/logged-provider.tsx";
 import { Toaster } from "sonner";
 
 import "./styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <LoggedProvider>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <Outlet />
+      </div>
+    </LoggedProvider>
+  ),
 });
 
 const routeTree = rootRoute.addChildren([
-  HomePage(rootRoute),
-  DeMolayPage(rootRoute),
+  DashboardPage(rootRoute), // Rota principal / 
+  MovimentacoesPage(rootRoute),
+  RelatoriosPage(rootRoute),
+  HomePage(rootRoute), // Sistema antigo em /legacy
 ]);
 
 const queryClient = new QueryClient();

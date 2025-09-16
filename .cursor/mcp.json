@@ -2,7 +2,10 @@
   "mcpServers": {
     "dpf": {
       "type": "http",
-      "url": "https://localhost-b6441226.deco.host/mcp"
+      "url": "http://localhost:8787/mcp",
+      "headers": {
+        "cookie": ""
+      }
     }
   }
 }

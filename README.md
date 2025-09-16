@@ -1,18 +1,12 @@
-# OS do Capítulo DeMolay — Gestão de Documentos e Convites
+# Sistema de Tesouraria — Capítulo DeMolay
 
-Sistema operacional para diretoria do Capítulo DeMolay, iniciando por gestão
-de documentos e templates para gerar ofícios e convites com papel timbrado,
-IA nativa e envio por e-mail. Construído sobre
-[Model Context Protocol (MCP)](https://spec.modelcontextprotocol.io/) com
-frontend React moderno.
+Sistema de gestão financeira para Capítulos DeMolay, permitindo registro de movimentações (entradas/saídas), anexos de comprovantes, relatórios exportáveis e dashboards com gráficos e análises. Construído sobre [Model Context Protocol (MCP)](https://spec.modelcontextprotocol.io/) com frontend React moderno.
 
-O servidor MCP expõe ferramentas e workflows e também serve a interface web
-em React + Tailwind CSS.
+O servidor MCP expõe ferramentas e workflows para gestão financeira e também serve a interface web em React + Tailwind CSS.
 
-## 📄 Plano inicial
+## 📄 Plano de implementação
 
-Veja `plan/start.md` para o plano de domínio, alternativas de geração de PDF
-(`pdf-lib`, `@react-pdf/renderer`, `html2canvas`+`jsPDF`) e recomendações.
+Veja `plans/tesouraria/README.md` para o plano completo de implementação, incluindo schema de banco, tools, views e cronograma detalhado.
 
 ## 📝 Development History
 
@@ -24,11 +18,12 @@ development history in the [`.specstory/`](.specstory/) folder.
 
 - **🤖 MCP Server**: Cloudflare Workers com ferramentas/workflows tipados
 - **⚛️ React Frontend**: Vite, TanStack Router e Tailwind CSS
-- **🖨️ PDF**: Geração a partir de papel timbrado (PDF) via `pdf-lib`
-- **🧩 Templates**: Corpo em Markdown com placeholders dinâmicos
-- **🧠 IA nativa**: Auxilia criação em massa e personalização
-- **📧 Envio por e-mail**: Para destinatários/listas cadastradas
-- **🔗 Link público**: Cada convite/ofício tem página HTML pública (não só PDF)
+- **💰 Gestão Financeira**: Registro de entradas/saídas com categorização
+- **📎 Anexos**: Upload seguro de comprovantes via Cloudflare R2
+- **📊 Relatórios**: Exportação em CSV/PDF com totais e agrupamentos
+- **📈 Dashboard**: Gráficos interativos com análise de tendências
+- **🔐 Autenticação**: Integração com sistema Deco (createPrivateTool)
+- **📋 Auditoria**: Log completo de todas as operações
 - **🚀 Hot Reload**: Live reload para frontend e backend
 - **☁️ Deploy**: Cloudflare Workers
 
@@ -93,5 +88,4 @@ Docs: [https://docs.deco.page](https://docs.deco.page)
 
 ---
 
-**Objetivo:** facilitar a operação da diretoria (MC, 1º/2º C, Escrivão, Tesoureiro)
-com documentos padronizados, IA e envios confiáveis.
+**Objetivo:** facilitar a gestão financeira do Capítulo DeMolay com controle de movimentações, relatórios auditáveis e dashboards para tomada de decisão.

@@ -3,17 +3,18 @@ name = "dpf"
 main = "main.ts"
 compatibility_date = "2025-06-17"
 compatibility_flags = [ "nodejs_compat" ]
-scope = "lucis"
+scope = "dpf"
 
 [assets]
 directory = "./view-build"
 binding = "ASSETS"
 
 [deco]
-workspace = "lucis"
+workspace = "dpf"
 bindings = []
 enable_workflows = true
 local = false
+policies = [ "DATABASES_RUN_SQL" ]
 
 [[migrations]]
 tag = "v1"

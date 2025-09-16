@@ -251,7 +251,7 @@ function HomePage() {
 
 export default (parentRoute: RootRoute) =>
   createRoute({
-    path: "/",
+    path: "/legacy",
     component: HomePage,
     getParentRoute: () => parentRoute,
   });
