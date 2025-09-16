@@ -1,117 +1,74 @@
 /**
- * Schema para o Sistema Operacional do Capítulo DeMolay
+ * Schema para o Sistema de Tesouraria do Capítulo DeMolay
  * 
  * Entidades principais:
- * - Letterhead (papel timbrado)
- * - Template (modelos de documentos)
- * - Document (convites/ofícios instanciados)
- * - Recipient (destinatários)
- * - List (listas de destinatários)
- * - EmailSend (logs de envio)
+ * - Categories (categorias de entrada/saída)
+ * - Accounts (contas - caixa, banco)
+ * - Transactions (movimentações financeiras)
+ * - Attachments (anexos/comprovantes)
+ * - AuditLogs (logs de auditoria)
  *
  * Após modificações, execute `npm run db:generate` para gerar migration.
  */
-import { integer, sqliteTable, text, real } from "@deco/workers-runtime/drizzle";
+import { integer, sqliteTable, text } from "@deco/workers-runtime/drizzle";
 
-// Papel timbrado (PDFs, PNGs, SVGs)
-export const letterheadsTable = sqliteTable("letterheads", {
+// Categorias de movimentação financeira
+export const categoriesTable = sqliteTable("categories", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
-  fileUrl: text("file_url").notNull(), // URL do arquivo no R2/FS
-  fileType: text("file_type").notNull(), // "pdf" | "png" | "svg"
-  pages: integer("pages").default(1), // número de páginas (para PDFs)
-  active: integer("active").default(1), // 0 = inativo, 1 = ativo
+  kind: text("kind").notNull(), // 'entrada' | 'saida'
+  active: integer("active").default(1), // boolean como integer (0/1)
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
-  updatedAt: integer("updated_at", { mode: 'timestamp' }),
 });
 
-// Templates de documentos
-export const templatesTable = sqliteTable("templates", {
+// Contas (caixa, banco) - opcional para separar diferentes fontes
+export const accountsTable = sqliteTable("accounts", {
   id: integer("id").primaryKey(),
-  type: text("type").notNull(), // "convite" | "oficio" | "ata" | "relatorio"
   name: text("name").notNull(),
-  description: text("description"),
-  letterheadId: integer("letterhead_id").references(() => letterheadsTable.id),
-  
-  // Placeholders como JSON: [{ id, label, type, required, default }]
-  placeholders: text("placeholders").notNull().default("[]"),
-  
-  // Layout como JSON: { margins, font, sizes, alignments }
-  layout: text("layout").notNull().default("{}"),
-  
-  // Corpo do template em Markdown
-  body: text("body").notNull().default(""),
-  
-  version: integer("version").default(1),
+  initialBalanceCents: integer("initial_balance_cents").default(0),
   active: integer("active").default(1),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
-  updatedAt: integer("updated_at", { mode: 'timestamp' }),
 });
 
-// Documentos instanciados (convites, ofícios)
-export const documentsTable = sqliteTable("documents", {
+// Movimentações financeiras (entradas e saídas)
+export const transactionsTable = sqliteTable("transactions", {
   id: integer("id").primaryKey(),
-  templateId: integer("template_id").notNull().references(() => templatesTable.id),
-  letterheadOverrideId: integer("letterhead_override_id").references(() => letterheadsTable.id),
-  
-  title: text("title").notNull(),
-  bodyRendered: text("body_rendered").notNull(), // HTML renderizado
-  bodySource: text("body_source").notNull(), // Markdown fonte
-  placeholdersFilled: text("placeholders_filled").notNull().default("{}"), // JSON dos valores
-  
-  pdfUrl: text("pdf_url"), // URL do PDF gerado (opcional)
-  publicSlug: text("public_slug"), // slug para URL pública
-  isPublic: integer("is_public").default(0), // 0 = privado, 1 = público
-  
-  createdBy: text("created_by"), // usuário que criou
+  accountId: integer("account_id").references(() => accountsTable.id),
+  type: text("type").notNull(), // 'entrada' | 'saida'
+  amountCents: integer("amount_cents").notNull(), // valor em centavos
+  date: text("date").notNull(), // YYYY-MM-DD
+  description: text("description").notNull(),
+  categoryId: integer("category_id").references(() => categoriesTable.id).notNull(),
+  method: text("method"), // 'dinheiro', 'pix', 'transferencia', 'cartao'
+  reference: text("reference"), // responsável/referência
+  notes: text("notes"),
+  createdBy: text("created_by").notNull(), // user ID da Deco
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
   updatedAt: integer("updated_at", { mode: 'timestamp' }),
+  deletedAt: integer("deleted_at", { mode: 'timestamp' }), // soft delete
 });
 
-// Destinatários
-export const recipientsTable = sqliteTable("recipients", {
+// Anexos/comprovantes das movimentações
+export const attachmentsTable = sqliteTable("attachments", {
   id: integer("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  tags: text("tags").default("[]"), // JSON array de tags
-  active: integer("active").default(1),
+  transactionId: integer("transaction_id").references(() => transactionsTable.id).notNull(),
+  filename: text("filename").notNull(),
+  contentType: text("content_type").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  storageKey: text("storage_key").notNull(), // chave no R2/S3
+  uploadedBy: text("uploaded_by").notNull(), // user ID da Deco
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
-  updatedAt: integer("updated_at", { mode: 'timestamp' }),
 });
 
-// Listas de destinatários
-export const listsTable = sqliteTable("lists", {
+// Logs de auditoria para rastreabilidade
+export const auditLogsTable = sqliteTable("audit_logs", {
   id: integer("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  active: integer("active").default(1),
-  createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
-  updatedAt: integer("updated_at", { mode: 'timestamp' }),
-});
-
-// Relacionamento N:N entre listas e destinatários
-export const listRecipientsTable = sqliteTable("list_recipients", {
-  id: integer("id").primaryKey(),
-  listId: integer("list_id").notNull().references(() => listsTable.id),
-  recipientId: integer("recipient_id").notNull().references(() => recipientsTable.id),
-  addedAt: integer("added_at", { mode: 'timestamp' }).notNull(),
-});
-
-// Logs de envio de email
-export const emailSendsTable = sqliteTable("email_sends", {
-  id: integer("id").primaryKey(),
-  documentId: integer("document_id").notNull().references(() => documentsTable.id),
-  recipientId: integer("recipient_id").notNull().references(() => recipientsTable.id),
-  
-  status: text("status").notNull(), // "pending" | "sent" | "failed" | "bounced"
-  messageId: text("message_id"), // ID da mensagem do provedor de email
-  subject: text("subject"),
-  
-  sentAt: integer("sent_at", { mode: 'timestamp' }),
-  error: text("error"), // mensagem de erro se falhou
-  
-  createdAt: integer("created_at", { mode: 'timestamp' }).notNull(),
+  entity: text("entity").notNull(), // 'transaction' | 'category' | 'attachment'
+  entityId: integer("entity_id").notNull(),
+  action: text("action").notNull(), // 'create' | 'update' | 'delete' | 'restore'
+  actorId: text("actor_id").notNull(), // user ID da Deco
+  timestamp: integer("timestamp", { mode: 'timestamp' }).notNull(),
+  diff: text("diff"), // JSON com mudanças (opcional)
 });
 
 // Tabela legacy (manter por enquanto)
